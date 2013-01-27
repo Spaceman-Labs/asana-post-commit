@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# modified from http://brunohq.com/journal/speed-project-git-hook-for-asana/
+
+# -----------------------
+# necessary configuration:
+# git config --global user.asana-key "MY_ASANA_API_KEY" (http://app.asana.com/-/account_api)
+# git config --local user.asana-workspace "WORKSPACE_ID" (found in the URL)
+# git config --local user.asana-project "PROJECT_ID" (found in the URL)
+# -----------------------
+
+apikey=$(git config user.asana-key)
+if [ $apikey == '' ] ; then exit 0; fi
+
+# hold the closed ticket numbers
+declare -a closed
+# hold the ticket numbers that are not closed, just touched
+declare -a referenced
+# track whether we're currently closing tickets or just referencing them
+closes='NO'
+
+# regex pattern to recognize a story number
+taskid_pattern='#([0-9]*)'
+# regex pattern to recognize a "closing this ticket" word
+closes_pattern='([Ff]ix|[Cc]lose|[Cc]losing)'
+# regex pattern to recognize an "and" word (eg "fixes #1, #2, and #3")
+and_pattern='([Aa]nd|&)'
+
+# get the checkin comment for parsing
+comment=$(git log --pretty=oneline -n1)
+
+# break the commit comment down into words
+IFS=' ' read -a words <<< "$comment"
+
+for element in "${words[@]}"
+do
+    # if we have a task id, save it to the appropriate array
+    if [[ $element =~ $taskid_pattern ]]; then
+	if [ "${closes}" == "YES" ]; then
+	    closed=("${closed[@]}" "${BASH_REMATCH[1]}")
+	fi
+	referenced=("${referenced[@]}" "${BASH_REMATCH[1]}")
+    # or else if we have a "closes" word, set the tracking bool accordingly
+    elif [[ $element =~ $closes_pattern ]]; then
+	closes='YES'
+    # and if we don't, set us back to referencing
+    # (if we're an "and", don't change any state)
+    elif [[ ! $element =~ $and_pattern ]]; then
+	closes='NO'
+    fi
+done
+
+# touch the stories we've referenced
+for element in "${referenced[@]}"
+do
+    curl -u ${apikey}: https://app.asana.com/api/1.0/tasks/${element}/stories \
+         -d "text=just committed ${comment/ / with message:%0A}" > /dev/null 2>&1
+done
+
+# close the tasks we've fixed
+for element in "${closed[@]}"
+do
+    curl --request PUT -u ${apikey}: https://app.asana.com/api/1.0/tasks/${element} \
+         -d "completed=true" > /dev/null 2>&1
+done
+
