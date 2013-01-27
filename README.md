@@ -7,15 +7,11 @@ tl;dr:
 
 Copy the post-commit file to your repo's root `.git/hooks` directory. It's probably not a great idea to actually clone the repo into the internals of your repo. I don't know that it will break anything, but I don't guarantee it won't.
 
-Then in your repo, run the following commands:
+Then run the following command:
 
 `% git config --global user.asana-key "MY_ASANA_API_KEY" # (get the api key at http://app.asana.com/-/account_api)`
 
-`% git config --local user.asana-workspace "WORKSPACE_ID" # (found in the URL when you click on a workspace)`
-
-`% git config --local user.asana-project "PROJECT_ID" # (found in the URL when you click on a project)`
-
-Then in your commits, you can write messages like "Tweaked the widget; fixed #1, #2, and #3; references #4 and #5; oh yeah, and closes #6" and the right thing will happen.
+Now in your commits, you can write messages like "Tweaked the widget; fixed #1, #2, and #3; references #4 and #5; oh yeah, and closes #6" and the right thing will happen.
 
 
 

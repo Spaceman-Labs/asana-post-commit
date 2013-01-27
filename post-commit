@@ -5,6 +5,8 @@
 # -----------------------
 # necessary configuration:
 # git config --global user.asana-key "MY_ASANA_API_KEY" (http://app.asana.com/-/account_api)
+#
+# not necessary at the moment, but may be useful in future revisions of the script:
 # git config --local user.asana-workspace "WORKSPACE_ID" (found in the URL)
 # git config --local user.asana-project "PROJECT_ID" (found in the URL)
 # -----------------------
