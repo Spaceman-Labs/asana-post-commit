@@ -30,7 +30,7 @@ and_pattern='([Aa]nd|&)'
 
 # get the checkin comment for parsing
 comment=$(git log --pretty=format:"%s %b" -n1)
-repo=`pwd | rev | awk -F \/ '{print $3}' | rev`
+repo=${PWD##*/}
 print_comment=$(git log --pretty=format:"Just committed %h with message:
 \"%s\"
 to repository $repo" -n1)
