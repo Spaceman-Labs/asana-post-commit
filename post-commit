@@ -29,7 +29,11 @@ closes_pattern='([Ff]ix|[Cc]lose|[Cc]losing)'
 and_pattern='([Aa]nd|&)'
 
 # get the checkin comment for parsing
-comment=$(git log --pretty=oneline -n1)
+comment=$(git log --pretty=format:"%s %b" -n1)
+repo=`pwd | rev | awk -F \/ '{print $3}' | rev`
+print_comment=$(git log --pretty=format:"Just committed %h with message:
+\"%s\"
+to repository $repo" -n1)
 
 # break the commit comment down into words
 IFS=' ' read -a words <<< "$comment"
@@ -56,7 +60,7 @@ done
 for element in "${referenced[@]}"
 do
     curl -u ${apikey}: https://app.asana.com/api/1.0/tasks/${element}/stories \
-         -d "text=just committed ${comment/ / with message:%0A}" > /dev/null 2>&1
+         -d "text=${print_comment}" > /dev/null 2>&1
 done
 
 # close the tasks we've fixed
@@ -65,4 +69,3 @@ do
     curl --request PUT -u ${apikey}: https://app.asana.com/api/1.0/tasks/${element} \
          -d "completed=true" > /dev/null 2>&1
 done
-
