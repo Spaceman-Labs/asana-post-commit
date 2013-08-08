@@ -11,6 +11,9 @@ Then run the following command:
 
 `% git config --global user.asana-key "MY_ASANA_API_KEY" # (get the api key at http://app.asana.com/-/account_api)`
 
+Then chmod your hooks folder:
+'% chmod 655 -R .git/hooks'
+
 Now in your commits, you can write messages like "Tweaked the widget; fixed #1, #2, and #3; references #4 and #5; oh yeah, and closes #6" and the right thing will happen.
 
 
