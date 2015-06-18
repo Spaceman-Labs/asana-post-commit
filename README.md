@@ -11,7 +11,7 @@ Then run the following commands:
 
 `% git config --global user.asana-key "MY_ASANA_API_KEY" # (get the api key at http://app.asana.com/-/account_api)`
 
-`% git config --global user.display-branch-name-in-comment "true/false" ""`
+`% git config --global user.display-branch-name-in-comment "true/false"`
 
 Then chmod your hooks folder:
 `% chmod 655 .git/hooks`
