@@ -16,7 +16,9 @@ Then chmod your hooks folder:
 
 Now in your commits, you can write messages like "Tweaked the widget; fixed #1, #2, and #3; references #4 and #5; oh yeah, and closes #6" and the right thing will happen.
 
-
+In addition, two variables exist in the post-commit script:
+display_branch_name (default true) - set to true for displaying the branch name after the repository in the comment.
+comment_by_branch_task_id (default true) - set to true for checking the branch name for task id. The task id must be start with '#' and be in the last part of the name. Example for branch name: `%myBranch#1`
 
 LICENSE
 -------
