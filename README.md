@@ -10,15 +10,14 @@ Copy the post-commit file to your repo's root `.git/hooks` directory. It's proba
 Then run the following command:
 
 `% git config --global user.asana-key "MY_ASANA_API_KEY" # (get the api key at http://app.asana.com/-/account_api)`
+`% git config --global user.display-branch-name-in-comment "true/false" ""`
 
 Then chmod your hooks folder:
 `% chmod 655 .git/hooks`
 
 Now in your commits, you can write messages like "Tweaked the widget; fixed #1, #2, and #3; references #4 and #5; oh yeah, and closes #6" and the right thing will happen.
 
-In addition, two variables exist in the post-commit script:
-display_branch_name (default true) - set to true for displaying the branch name after the repository in the comment.
-comment_by_branch_task_id (default true) - set to true for checking the branch name for task id. The task id must be start with '#' and be in the last part of the name. Example for branch name: `%myBranch#1`
+Alternatively, if the branch name ends with '#' followed by the task id then a comment will also be added to the task. Example for branch name with task id 1: `%myBranch#1`
 
 LICENSE
 -------

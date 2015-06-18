@@ -12,9 +12,13 @@
 # -----------------------
 
 apikey=$(git config user.asana-key)
-display_branch_name=true
-comment_by_branch_task_id=true
-if [ $apikey == '' ] ; then exit 0; fi
+display_branch_name=$(git config user.display-branch-name-in-comment)
+if [ "$apikey" == "" ]; then
+	exit 0;
+fi
+if [ "$display_branch_name" == "" ]; then
+	display_branch_name=false;
+fi
 
 # hold the closed ticket numbers
 declare -a closed
@@ -36,7 +40,7 @@ repo=${PWD##*/}
 
 # get branch name and display in the comment
 branch_message=""
-if [ "$display_branch_name" = true ]; then
+if [ "$display_branch_name" == "true" ]; then
     branch=$(git branch | grep '*' | sed 's/^..//')
     branch_message=" in branch $branch"
 fi
@@ -48,6 +52,7 @@ to repository $repo$branch_message" -n1)
 # break the commit comment down into words
 IFS=' ' read -a words <<< "$comment"
 
+found_task_id=false
 for element in "${words[@]}"
 do
     # if we have a task id, save it to the appropriate array
@@ -56,6 +61,7 @@ do
             closed=("${closed[@]}" "${BASH_REMATCH[1]}")
         fi
         referenced=("${referenced[@]}" "${BASH_REMATCH[1]}")
+        found_task_id=true
     # or else if we have a "closes" word, set the tracking bool accordingly
     elif [[ $element =~ $closes_pattern ]]; then
         closes='YES'
@@ -66,11 +72,14 @@ do
     fi
 done
 
-# get task id from branch name. Then send a comment request if task_id exists
-task_id=$(git branch | grep '*' | sed 's/^..//' | grep -o '#.*' | sed 's/^.//')
-if [[ "$task_id" && "$comment_by_branch_task_id" = true ]]; then
-    curl -u ${apikey}: https://app.asana.com/api/1.0/tasks/${task_id}/stories \
-         -d "text=${print_comment}" > /dev/null 2>&1
+# if task id not found in comment, then look for it in the branch name
+if [ "$found_task_id" = false ]; then
+    # get task id from branch name. Then send a comment request if task_id exists.
+	task_id=$(git branch | grep '*' | sed 's/^..//' | grep -o '#.*' | sed 's/^.//')
+	if [ "$task_id" ]; then
+    	curl -u ${apikey}: https://app.asana.com/api/1.0/tasks/${task_id}/stories \
+       		-d "text=${print_comment}" > /dev/null 2>&1
+	fi
 fi
 
 # touch the stories we've referenced
@@ -86,3 +95,4 @@ do
     curl --request PUT -u ${apikey}: https://app.asana.com/api/1.0/tasks/${element} \
          -d "completed=true" > /dev/null 2>&1
 done
+
