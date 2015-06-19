@@ -12,7 +12,13 @@
 # -----------------------
 
 apikey=$(git config user.asana-key)
-if [ $apikey == '' ] ; then exit 0; fi
+display_branch_name=$(git config user.display-branch-name-in-comment)
+if [ "$apikey" == "" ]; then
+	exit 0;
+fi
+if [ "$display_branch_name" == "" ]; then
+	display_branch_name=false;
+fi
 
 # hold the closed ticket numbers
 declare -a closed
@@ -31,30 +37,50 @@ and_pattern='([Aa]nd|&)'
 # get the checkin comment for parsing
 comment=$(git log --pretty=format:"%s %b" -n1)
 repo=${PWD##*/}
+
+# get branch name and display in the comment
+branch_message=""
+if [ "$display_branch_name" == "true" ]; then
+    branch=$(git branch | grep '*' | sed 's/^..//')
+    branch_message=" in branch $branch"
+fi
+
 print_comment=$(git log --pretty=format:"Just committed %h with message:
 \"%s\"
-to repository $repo" -n1)
+to repository $repo$branch_message" -n1)
 
 # break the commit comment down into words
 IFS=' ' read -a words <<< "$comment"
 
+found_task_id=false
 for element in "${words[@]}"
 do
     # if we have a task id, save it to the appropriate array
     if [[ $element =~ $taskid_pattern ]]; then
-	if [ "${closes}" == "YES" ]; then
-	    closed=("${closed[@]}" "${BASH_REMATCH[1]}")
-	fi
-	referenced=("${referenced[@]}" "${BASH_REMATCH[1]}")
+        if [ "${closes}" == "YES" ]; then
+            closed=("${closed[@]}" "${BASH_REMATCH[1]}")
+        fi
+        referenced=("${referenced[@]}" "${BASH_REMATCH[1]}")
+        found_task_id=true
     # or else if we have a "closes" word, set the tracking bool accordingly
     elif [[ $element =~ $closes_pattern ]]; then
-	closes='YES'
+        closes='YES'
     # and if we don't, set us back to referencing
     # (if we're an "and", don't change any state)
     elif [[ ! $element =~ $and_pattern ]]; then
-	closes='NO'
+        closes='NO'
     fi
 done
+
+# if task id not found in comment, then look for it in the branch name
+if [ "$found_task_id" = false ]; then
+    # get task id from branch name. Then send a comment request if task_id exists.
+	task_id=$(git branch | grep '*' | sed 's/^..//' | grep -o '#.*' | sed 's/^.//')
+	if [ "$task_id" ]; then
+    	curl -u ${apikey}: https://app.asana.com/api/1.0/tasks/${task_id}/stories \
+       		-d "text=${print_comment}" > /dev/null 2>&1
+	fi
+fi
 
 # touch the stories we've referenced
 for element in "${referenced[@]}"
@@ -69,3 +95,4 @@ do
     curl --request PUT -u ${apikey}: https://app.asana.com/api/1.0/tasks/${element} \
          -d "completed=true" > /dev/null 2>&1
 done
+
