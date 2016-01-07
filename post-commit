@@ -9,13 +9,19 @@
 # -----------------------
 # necessary configuration:
 # git config --global user.asana-token "MY_ASANA_PERSONAL_ACCESS_TOKEN" (http://app.asana.com/-/account_api)
+# git config --global user.display-branch-name-in-comment "true/false" # (This is config is optional, defaults to false)
 # -----------------------
 
 access_token=$(git config user.asana-token)
+display_branch_name=$(git config user.display-branch-name-in-comment)
 
 # defaults
 if [ $access_token == "" ]; then
-    exit 0
+    echo "Please Set Your Asana Token git config --global user.asana-token \"MY_ASANA_PERSONAL_ACCESS_TOKEN\" (http://app.asana.com/-/account_api)" > &2
+    exit 1
+fi
+if [ "$display_branch_name" == "" ]; then
+	display_branch_name=false;
 fi
 
 # Find repository host
@@ -60,10 +66,17 @@ and_pattern='([Aa]nd|&)'
 
 # get the checkin comment for parsing
 comment=$(git log --pretty=format:"%B" -n1 | tr '\n' ' ')
+
+branch_message=""
+if [ "$display_branch_name" == "true" ]; then
+    branch=$(git rev-parse --abbrev-ref --quiet HEAD)
+    branch_message=" in branch $branch"
+fi
+
 if [[ $commit_url == "" ]]; then
-    print_comment=$(git log -n1 --pretty=format:"Committed %h to $(git rev-parse --abbrev-ref --quiet HEAD) on $repository:%n<code>%B</code>")
+    print_comment=$(git log -n1 --pretty=format:"Committed %h$branch_message on $repository:%n<code>%B</code>")
 else
-    print_comment=$(git log -n1 --pretty=format:"Committed to $(git rev-parse --abbrev-ref --quiet HEAD): $commit_url%H%n<code>%B</code>")
+    print_comment=$(git log -n1 --pretty=format:"Committed$branch_message: $commit_url%H%n<code>%B</code>")
 fi
 
 # break the commit comment down into words
