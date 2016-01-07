@@ -1,7 +1,7 @@
 README
 ======
 
-A git post-commit script to comment on / close Asana tickets. Read the blog post with more detail here: [http://www.ultrajoke.net/2013/01/integrating-asana-and-git/](http://www.ultrajoke.net/2013/01/integrating-asana-and-git/)
+A git post-commit script to comment on / close Asana tickets. Read the blog post about version one here: [http://www.ultrajoke.net/2013/01/integrating-asana-and-git/](http://www.ultrajoke.net/2013/01/integrating-asana-and-git/)
 
 tl;dr:
 
@@ -9,12 +9,12 @@ Copy the post-commit file to your repo's root `.git/hooks` directory. It's proba
 
 Then run the following commands:
 
-`% git config --global user.asana-key "MY_ASANA_API_KEY" # (get the api key at http://app.asana.com/-/account_api)`
+`% git config --global user.asana-token "MY_ASANA_PERSONAL_ACCESS_TOKEN" (http://app.asana.com/-/account_api)`
 
 `% git config --global user.display-branch-name-in-comment "true/false" # (This is config is optional, defaults to false)` 
 
-Then chmod your hooks folder:
-`% chmod 655 .git/hooks`
+Then chmod your hooks folder and post-commit hook file:
+`% chmod 755 .git/hooks && chmod ogu+rx .git/hooks/post-commit`
 
 Now in your commits, you can write messages like "Tweaked the widget; fixed #1, #2, and #3; references #4 and #5; oh yeah, and closes #6" and the right thing will happen.
 
