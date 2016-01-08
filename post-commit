@@ -107,8 +107,12 @@ if [ "$found_task_id" = false ]; then
     # get task id from branch name. Then send a comment request if task_id exists.
 	task_id=$(git branch | grep '*' | sed 's/^..//' | grep -o '#.*' | sed 's/^.//')
 	if [ "$task_id" ]; then
-    	curl -u ${apikey}: https://app.asana.com/api/1.0/tasks/${task_id}/stories \
-       		-d "text=${print_comment}" > /dev/null 2>&1
+       	curl \
+            -H "Authorization: Bearer ${access_token}" \
+            -X POST \
+            --data-urlencode "html_text=${print_comment}" \
+            "https://app.asana.com/api/1.0/tasks/${task_id}/stories" \
+            > /dev/null 2>&1
 	fi
 fi
 
