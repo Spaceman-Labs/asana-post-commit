@@ -118,12 +118,18 @@ fi
 
 # touch the stories we've referenced
 for element in "${referenced[@]}"; do
-    curl \
-        -H "Authorization: Bearer ${access_token}" \
-        -X POST \
-        --data-urlencode "html_text=${print_comment}" \
-        "https://app.asana.com/api/1.0/tasks/${element}/stories" \
-        > /dev/null 2>&1
+    http_code=$(curl \
+                    -sw '%{http_code}' \
+                    -H "Authorization: Bearer ${access_token}" \
+                    -X POST \
+                    --data-urlencode "html_text=${print_comment}" \
+                    "https://app.asana.com/api/1.0/tasks/${element}/stories" \
+                    -o /dev/null 2>&1)
+    if [ "$http_code" = "201" ]; then
+        echo "Successfully added comment for task $element"
+    else
+        echo "Error for task $element. HTTP return code:$http_code"
+    fi
 done
 
 # close the tasks we've fixed
