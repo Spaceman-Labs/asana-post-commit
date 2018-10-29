@@ -74,9 +74,9 @@ if [ "$display_branch_name" == "true" ]; then
 fi
 
 if [[ $commit_url == "" ]]; then
-    print_comment=$(git log -n1 --pretty=format:"Committed %h$branch_message on $repository:%n<code>%B</code>")
+    print_comment=$(git log -n1 --pretty=format:"<body>Committed %h$branch_message on $repository:%n<code>%B</code></body>")
 else
-    print_comment=$(git log -n1 --pretty=format:"Committed$branch_message: $commit_url%H%n<code>%B</code>")
+    print_comment=$(git log -n1 --pretty=format:"<body>Committed$branch_message: $commit_url%H%n<code>%B</code></body>")
 fi
 
 # break the commit comment down into words
